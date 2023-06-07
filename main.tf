@@ -256,6 +256,40 @@ resource "aws_route_table" "private" {
 
   vpc_id = local.vpc_id
 
+  # Add additional routes if they have been specified
+  dynamic "route" {
+    for_each = var.private_subnet_additional_routes
+    content {
+      # One of the following destinations must be provided
+      cidr_block      = route.value.cidr_block
+      ipv6_cidr_block = lookup(route.value, "ipv6_cidr_block", null)
+
+      # One of the following targets must be provided
+      egress_only_gateway_id    = lookup(route.value, "egress_only_gateway_id", null)
+      gateway_id                = lookup(route.value, "gateway_id", null)
+      instance_id               = lookup(route.value, "instance_id", null)
+      nat_gateway_id            = lookup(route.value, "nat_gateway_id", null)
+      network_interface_id      = lookup(route.value, "network_interface_id", null)
+      transit_gateway_id        = lookup(route.value, "transit_gateway_id", null)
+      vpc_endpoint_id           = lookup(route.value, "vpc_endpoint_id", null)
+      vpc_peering_connection_id = lookup(route.value, "vpc_peering_connection_id", null)
+    }
+  }
+
+  # Point default route of private subnets to the NAT gateway if using
+  dynamic "route" {
+    count = var.enable_nat_gateway ? local.nat_gateway_count : 0
+    content {
+      cidr_block      = "0.0.0.0/0"
+      nat_gateway_id  = element(aws_nat_gateway.this[*].id, count.index)
+    }
+  }
+
+  timeouts {
+    create = "5m"
+  }
+}
+
   tags = merge(
     {
       "Name" = var.single_nat_gateway ? "${var.name}-${var.private_subnet_suffix}" : format(
@@ -389,6 +423,26 @@ resource "aws_route_table" "database" {
   count = local.create_database_route_table ? var.single_nat_gateway || var.create_database_internet_gateway_route ? 1 : local.len_database_subnets : 0
 
   vpc_id = local.vpc_id
+
+  # Add additional routes if they have been specified
+  dynamic "route" {
+    for_each = var.database_subnet_additional_routes
+    content {
+      # One of the following destinations must be provided
+      cidr_block      = route.value.cidr_block
+      ipv6_cidr_block = lookup(route.value, "ipv6_cidr_block", null)
+
+      # One of the following targets must be provided
+      egress_only_gateway_id    = lookup(route.value, "egress_only_gateway_id", null)
+      gateway_id                = lookup(route.value, "gateway_id", null)
+      instance_id               = lookup(route.value, "instance_id", null)
+      nat_gateway_id            = lookup(route.value, "nat_gateway_id", null)
+      network_interface_id      = lookup(route.value, "network_interface_id", null)
+      transit_gateway_id        = lookup(route.value, "transit_gateway_id", null)
+      vpc_endpoint_id           = lookup(route.value, "vpc_endpoint_id", null)
+      vpc_peering_connection_id = lookup(route.value, "vpc_peering_connection_id", null)
+    }
+  }
 
   tags = merge(
     {
