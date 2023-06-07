@@ -214,6 +214,12 @@ variable "map_public_ip_on_launch" {
   default     = false
 }
 
+variable "private_subnet_additional_routes" {
+  description = "Additional routes to associate to the private subnets. See https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/default_route_table#route"
+  type        = list(map(string))
+  default     = []
+}
+
 variable "public_subnet_private_dns_hostname_type_on_launch" {
   description = "The type of hostnames to assign to instances in the subnet at launch. For IPv6-only subnets, an instance DNS name must be based on the instance ID. For dual-stack and IPv4-only subnets, you can specify whether DNS names use the instance IPv4 address or the instance ID. Valid values: `ip-name`, `resource-name`"
   type        = string
@@ -431,6 +437,12 @@ variable "private_acl_tags" {
 variable "database_subnets" {
   description = "A list of database subnets inside the VPC"
   type        = list(string)
+  default     = []
+}
+
+variable "database_subnet_additional_routes" {
+  description = "Additional routes to associate to the database subnets. See https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/default_route_table#route"
+  type        = list(map(string))
   default     = []
 }
 
