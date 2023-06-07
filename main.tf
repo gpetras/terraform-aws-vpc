@@ -280,15 +280,14 @@ resource "aws_route_table" "private" {
   dynamic "route" {
     count = var.enable_nat_gateway ? local.nat_gateway_count : 0
     content {
-      cidr_block      = "0.0.0.0/0"
-      nat_gateway_id  = element(aws_nat_gateway.this[*].id, count.index)
+      cidr_block     = "0.0.0.0/0"
+      nat_gateway_id = element(aws_nat_gateway.this[*].id, count.index)
     }
   }
 
   timeouts {
     create = "5m"
   }
-}
 
   tags = merge(
     {
